@@ -1,11 +1,23 @@
-import React from 'react';
+import { Box, Card, Typography } from "@mui/material";
 
 const Dashboard = () => {
   return (
-    <div>
-      <h1>Welcome to Employee Management System Immobi</h1>
-      <p>Use the menu to navigate through different sections.</p>
-    </div>
+    <Box
+      display={"flex"}
+      width={"100%"}
+      height={"100vh"}
+    >
+      <Box flex pt={4} pl={4}>
+        <Typography variant="h3">
+          Dashboard
+        </Typography>
+        <Card sx={{ bgcolor: "#4c98f0", color: "white" }}>
+          <Typography variant="h6">
+            Employee
+          </Typography>
+        </Card>
+      </Box>
+    </Box>
   );
 };
 

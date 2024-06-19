@@ -1,15 +1,15 @@
-import React from 'react';
-import Sidebar from '../components/Sidebar';
-import { Box } from '@mui/material';
+import React from "react";
+import Sidebar from "../components/Sidebar";
+import { Box } from "@mui/material";
 
 const MainLayout = ({ children }) => {
   return (
-    <div style={{ display: 'flex' }}>
+    <Box display="flex" height="100vh">
       <Sidebar />
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" width="100%" bgcolor="whitesmoke">
         {children}
       </Box>
-    </div>
+    </Box>
   );
 };
 
