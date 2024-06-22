@@ -1,134 +1,94 @@
-// import React, { useState } from 'react';
-// import { createEmployee } from '../../api/employeeService';
-// import { TextField, Button } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import {
+  TextField,
+  Box,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormControlLabel,
+  RadioGroup,
+  Radio,
+  Grid,
+  FormLabel,
+  Button,
+} from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
+import { updateEmployee, getEmployeeById } from "../../api/employeeService";
+import { getDepartments } from "../../api/departmentService";
+import { getPositionByDepartment } from "../../api/positionService";
 
-// const EmployeeEditForm = ({ fetchEmployees }) => {
-//   const [name, setName] = useState('');
-//   const [id_position, setIdPosition] = useState('');
-//   const [age, setAge] = useState('');
-//   const [gender, setGender] = useState('');
-//   const [birth_date, setBirthDate] = useState('');
-//   const [address, setAddress] = useState('');
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     try {
-//       await createEmployee({ name, id_position, age, gender, birth_date, address });
-//       fetchEmployees();
-//       setName('');
-//       setIdPosition('');
-//       setAge('');
-//       setGender('');
-//       setBirthDate('');
-//       setAddress('');
-//     } catch (error) {
-//       console.error('Error creating employee:', error);
-//     }
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit}>
-//       <TextField
-//         label="Name"
-//         value={name}
-//         onChange={(e) => setName(e.target.value)}
-//         fullWidth
-//         margin="normal"
-//       />
-//       <TextField
-//         label="Position ID"
-//         value={id_position}
-//         onChange={(e) => setIdPosition(e.target.value)}
-//         fullWidth
-//         margin="normal"
-//       />
-//       <TextField
-//         label="Age"
-//         value={age}
-//         onChange={(e) => setAge(e.target.value)}
-//         fullWidth
-//         margin="normal"
-//       />
-//       <TextField
-//         label="Gender"
-//         value={gender}
-//         onChange={(e) => setGender(e.target.value)}
-//         fullWidth
-//         margin="normal"
-//       />
-//       <TextField
-//         label="Birth Date"
-//         type="date"
-//         value={birth_date}
-//         onChange={(e) => setBirthDate(e.target.value)}
-//         fullWidth
-//         margin="normal"
-//         InputLabelProps={{
-//           shrink: true,
-//         }}
-//       />
-//       <TextField
-//         label="Address"
-//         value={address}
-//         onChange={(e) => setAddress(e.target.value)}
-//         fullWidth
-//         margin="normal"
-//       />
-//       <Button type="submit" variant="contained" color="primary">
-//         Add Employee
-//       </Button>
-//     </form>
-//   );
-// };
-
-// export default EmployeeEditForm;
-
-
-import React, { useState, useEffect } from 'react';
-import { TextField, Button, FormControl, FormControlLabel, Radio, RadioGroup, Select, MenuItem, InputLabel, Box } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getEmployeeById, updateEmployee } from '../../api/employeeService';
-import { getDepartments } from '../../api/departmentService';
-import { getPositions } from '../../api/positionService';
-
-const EmployeeEditForm = ({ fetchEmployees }) => {
+const EmployeeEditForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [employee, setEmployee] = useState({
-    name: '',
-    age: '',
-    gender: '',
-    birth_date: '',
-    address: '',
-    id_department: '',
-    id_position: '',
+    name: "",
+    id_position: "",
+    id_department: "",
+    age: "",
+    gender: "",
+    birth_date: "",
+    address: "",
   });
   const [departments, setDepartments] = useState([]);
   const [positions, setPositions] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDepartments = async () => {
       try {
-        const employeeResponse = await getEmployeeById(id);
-        setEmployee(employeeResponse.data);
-
-        const departmentsResponse = await getDepartments();
-        setDepartments(departmentsResponse.data);
-
-        const positionsResponse = await getPositions();
-        setPositions(positionsResponse.data);
+        const response = await getDepartments();
+        setDepartments(response.data);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching departments:", error);
       }
     };
 
-    fetchData();
+    const fetchEmployee = async () => {
+      try {
+        const response = await getEmployeeById(id);
+        const employeeData = response.data;
+        setEmployee({
+          name: employeeData.name,
+          id_position: employeeData.id_position,
+          id_department: employeeData.id_department,
+          age: employeeData.age,
+          gender: employeeData.gender,
+          birth_date: employeeData.birth_date,
+          address: employeeData.address,
+        });
+
+        // Fetch positions based on the department of the employee
+        const positionsData = await getPositionByDepartment(employeeData.id_department);
+        setPositions(positionsData);
+      } catch (error) {
+        console.error("Error fetching employee:", error);
+      }
+    };
+
+    fetchDepartments();
+    fetchEmployee();
   }, [id]);
+
+  const handleDepartmentChange = async (e) => {
+    const { value } = e.target;
+    setEmployee((prevEmployee) => ({
+      ...prevEmployee,
+      id_department: value,
+    }));
+
+    try {
+      const positionsData = await getPositionByDepartment(value);
+      setPositions(positionsData);
+    } catch (error) {
+      console.error("Error fetching positions:", error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEmployee((prevState) => ({
-      ...prevState,
+    setEmployee((prevEmployee) => ({
+      ...prevEmployee,
       [name]: value,
     }));
   };
@@ -137,89 +97,132 @@ const EmployeeEditForm = ({ fetchEmployees }) => {
     e.preventDefault();
     try {
       await updateEmployee(id, employee);
-      fetchEmployees();
-      navigate('/employees');
+      navigate("/employee");
     } catch (error) {
-      console.error('Error updating employee:', error);
+      console.error("Error updating employee:", error);
     }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
-      <TextField
-        label="Nama"
-        name="name"
-        value={employee.name}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      />
-      <TextField
-        label="Usia"
-        name="age"
-        type="number"
-        value={employee.age}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      />
-      <FormControl component="fieldset" margin="normal">
-        <RadioGroup row name="gender" value={employee.gender} onChange={handleChange}>
-          <FormControlLabel value="male" control={<Radio />} label="Laki-laki" />
-          <FormControlLabel value="female" control={<Radio />} label="Perempuan" />
-        </RadioGroup>
-      </FormControl>
-      <TextField
-        label="Tanggal Lahir"
-        name="birth_date"
-        type="date"
-        value={employee.birth_date}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-      <TextField
-        label="Alamat"
-        name="address"
-        value={employee.address}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      />
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Department</InputLabel>
-        <Select
-          name="id_department"
-          value={employee.id_department}
-          onChange={handleChange}
-        >
-          {departments.map((dept) => (
-            <MenuItem key={dept.id} value={dept.id}>
-              {dept.department_name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Jabatan</InputLabel>
-        <Select
-          name="id_position"
-          value={employee.id_position}
-          onChange={handleChange}
-        >
-          {positions.map((position) => (
-            <MenuItem key={position.id} value={position.id}>
-              {position.position_name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <Button type="submit" variant="contained" color="primary" fullWidth>
-        Save Changes
-      </Button>
+    <Box display="flex" flexDirection="column" p={4}>
+      <Typography variant="h4" fontWeight="bold">
+        Form Edit Karyawan
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              name="name"
+              label="Nama"
+              value={employee.name}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl component="fieldset" fullWidth>
+              <FormLabel>Jenis Kelamin</FormLabel>
+              <RadioGroup
+                row
+                name="gender"
+                value={employee.gender}
+                onChange={handleChange}
+              >
+                <FormControlLabel
+                  value="Laki-laki"
+                  control={<Radio />}
+                  label="Laki-laki"
+                />
+                <FormControlLabel
+                  value="Perempuan"
+                  control={<Radio />}
+                  label="Perempuan"
+                />
+              </RadioGroup>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              name="age"
+              label="Usia"
+              type="number"
+              value={employee.age}
+              onChange={handleChange}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              name="birth_date"
+              label="Tanggal Lahir"
+              type="date"
+              value={employee.birth_date}
+              onChange={handleChange}
+              fullWidth
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Departemen</InputLabel>
+              <Select
+                label="Departemen"
+                name="id_department"
+                value={employee.id_department}
+                onChange={handleDepartmentChange}
+              >
+                {departments.map((dept) => (
+                  <MenuItem key={dept.id} value={dept.id}>
+                    {dept.department_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Jabatan</InputLabel>
+              <Select
+                label="Jabatan"
+                name="id_position"
+                value={employee.id_position}
+                onChange={handleChange}
+              >
+                {positions.map((position) => (
+                  <MenuItem key={position.id} value={position.id}>
+                    {position.position_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              name="address"
+              label="Alamat"
+              value={employee.address}
+              onChange={handleChange}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={4} display={"flex"} gap={2}>
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              Save
+            </Button>
+            <Button
+              onClick={() => navigate("/employee")}
+              variant="contained"
+              color="inherit"
+              fullWidth
+            >
+              Cancel
+            </Button>
+          </Grid>
+        </Grid>
+      </form>
     </Box>
   );
 };

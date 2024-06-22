@@ -10,6 +10,7 @@ import PositionForm from "./components/Position/PositionForm";
 import PositionEditForm from "./components/Position/PositionEditForm";
 import EmployeeList from "./components/Employee/EmployeeList";
 import EmployeeForm from "./components/Employee/EmployeeForm";
+import EmployeeEditForm from "./components/Employee/EmployeeEditForm";
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
           {/* Employee Routes */}
           <Route path="/employee" element={<EmployeeList />} />
           <Route path="/employee/add" element={<EmployeeForm />} />
+          <Route path="/employee/edit/:id" element={<EmployeeEditForm />} />
         </Routes>
       </MainLayout>
     </Router>

@@ -73,7 +73,7 @@ const EmployeeForm = () => {
     e.preventDefault();
     try {
       await createEmployee(employee);
-      navigate("/employees");
+      navigate("/employee");
     } catch (error) {
       console.error("Error creating employee:", error);
     }
@@ -106,12 +106,12 @@ const EmployeeForm = () => {
                 onChange={handleChange}
               >
                 <FormControlLabel
-                  value="male"
+                  value="Laki-laki"
                   control={<Radio />}
                   label="Laki-laki"
                 />
                 <FormControlLabel
-                  value="female"
+                  value="Perempuan"
                   control={<Radio />}
                   label="Perempuan"
                 />
